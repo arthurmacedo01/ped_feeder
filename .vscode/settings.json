@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "freertos.h": "c",
+    "*.ipp": "c",
+    "chrono": "c",
+    "condition_variable": "c",
+    "mutex": "c",
+    "thread": "c",
+    "task.h": "c",
+    "esp_err.h": "c",
+    "queue.h": "c"
+  }
+}
