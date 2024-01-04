@@ -2,13 +2,13 @@ menu "Wifi Configuration"
 
     config ESP_WIFI_SSID
         string "WiFi SSID"
-        default "Mar_2_4_GHz"
+        default "Wifi_SSID_here"
         help
             SSID (network name) for the example to connect to.
 
     config ESP_WIFI_PASSWORD
         string "WiFi Password"
-        default "apartamento"
+        default "password_here"
         help
             WiFi password (WPA or WPA2) for the example to use.
 
