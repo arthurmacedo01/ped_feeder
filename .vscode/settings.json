@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "sys.h": "c",
+    "event_groups.h": "c",
+    "err.h": "c",
+    "task.h": "c",
+    "nvs_flash.h": "c",
+    "mqtt_client.h": "c",
+    "esp_wifi.h": "c",
+    "string.h": "c",
+    "*.ipp": "c",
+    "cstring": "c",
+    "esp_http_client.h": "c",
+    "my_http.h": "c"
+  }
+}
