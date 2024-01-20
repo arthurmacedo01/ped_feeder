@@ -28,9 +28,6 @@
 
 #include "esp_log.h"
 #include "mqtt_client.h"
-
-#include "cJSON.h"
-
 static const char *TAG = "mqtt_example";
 
 static void log_error_if_nonzero(const char *message, int error_code)
@@ -57,7 +54,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   esp_mqtt_event_handle_t event = event_data;
   esp_mqtt_client_handle_t client = event->client;
   int msg_id;
-  TaskHandle_t xTask = handler_args;
+  QueueHandle_t xQueueMQTT = handler_args;
   switch ((esp_mqtt_event_id_t)event_id)
   {
   case MQTT_EVENT_CONNECTED:
@@ -82,11 +79,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     ESP_LOGI(TAG, "MQTT_EVENT_DATA");
     printf("TOPIC=%.*s\r\n", event->topic_len, event->topic);
     printf("DATA=%.*s\r\n", event->data_len, event->data);
-    cJSON *data = cJSON_Parse(event->data);
-    printf("o valor de on_off é %d\n", cJSON_GetObjectItem(data, "on_off")->valueint);
-    printf("o valor de itensity é %d\n", atoi(cJSON_GetObjectItem(data, "intensity")->valuestring));
-
-    xTaskNotifyGive(xTask);
+    xQueueSendToBack(xQueueMQTT, (void *)&(event->data), portMAX_DELAY);
     break;
   case MQTT_EVENT_ERROR:
     ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
@@ -104,7 +97,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   }
 }
 
-void mqtt_app_start(TaskHandle_t xTask)
+void mqtt_app_start(QueueHandle_t xQueueMQTT)
 {
   esp_mqtt_client_config_t mqtt_cfg = {
       .uri = CONFIG_BROKER_URL,
@@ -112,6 +105,6 @@ void mqtt_app_start(TaskHandle_t xTask)
 
   esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
   /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
-  esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, xTask);
+  esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, xQueueMQTT);
   esp_mqtt_client_start(client);
 }
