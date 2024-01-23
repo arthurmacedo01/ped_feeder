@@ -4,6 +4,7 @@
 #include "my_wifi.h"
 #include "my_mqtt.h"
 #include "cJSON.h"
+#include "my_servo.h"
 
 TaskHandle_t xTask = NULL;
 QueueHandle_t xQueueMQTT = NULL;
@@ -18,6 +19,7 @@ void task_function(void *arg)
     cJSON *data_JSON = cJSON_Parse(data);
     printf("dentro da task: valor de on_off é %d\n", cJSON_GetObjectItem(data_JSON, "on_off")->valueint);
     printf("dentro da task: o valor de itensity é %d\n", atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring));
+    rotate_servo(atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring));
   }
 }
 
