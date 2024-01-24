@@ -90,7 +90,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
   }
 }
 
-void wifi_init_sta(void)
+void wifi_init_sta(TaskHandle_t xTaskServer)
 {
   s_wifi_event_group = xEventGroupCreate();
 
@@ -99,7 +99,7 @@ void wifi_init_sta(void)
   ESP_ERROR_CHECK(esp_netif_init());
 
   ESP_ERROR_CHECK(esp_event_loop_create_default());
-  esp_netif_create_default_wifi_sta();
+  esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
 
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
@@ -128,6 +128,27 @@ void wifi_init_sta(void)
            */
           .threshold.authmode = ESP_WIFI_SCAN_AUTH_MODE_THRESHOLD},
   };
+
+  nvs_handle nvs_handle;
+  ESP_ERROR_CHECK(nvs_open("store", NVS_READONLY, &nvs_handle));
+  size_t required_size;
+  if (nvs_get_str(nvs_handle, "ssid", NULL, &required_size) == ESP_OK)
+  {
+    char *ssid_nvs = malloc(required_size);
+    nvs_get_str(nvs_handle, "ssid", ssid_nvs, &required_size);
+    if (nvs_get_str(nvs_handle, "password", NULL, &required_size) == ESP_OK)
+    {
+      char *password_nvs = malloc(required_size);
+      nvs_get_str(nvs_handle, "password", password_nvs, &required_size);
+      strcpy((char *)wifi_config.sta.ssid, ssid_nvs);
+      strcpy((char *)wifi_config.sta.password, password_nvs);
+      printf("ssid:%s\nsenha:%s \n", ssid_nvs, password_nvs);
+      free(password_nvs);
+    }
+    free(ssid_nvs);
+  }
+  nvs_close(nvs_handle);
+
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
   ESP_ERROR_CHECK(esp_wifi_start());
@@ -146,13 +167,18 @@ void wifi_init_sta(void)
    * happened. */
   if (bits & WIFI_CONNECTED_BIT)
   {
-    ESP_LOGI(TAG, "connected to ap SSID:%s",
-             EXAMPLE_ESP_WIFI_SSID);
+    ESP_LOGI(TAG, "connected to ap");
   }
   else if (bits & WIFI_FAIL_BIT)
   {
-    ESP_LOGI(TAG, "Failed to connect to SSID:%s",
-             EXAMPLE_ESP_WIFI_SSID);
+    ESP_LOGI(TAG, "Failed to connect to ap");
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    esp_netif_destroy_default_wifi(sta_netif);
+    esp_event_loop_delete_default();
+    esp_netif_deinit();
+    nvs_flash_deinit();
+    xTaskNotifyGive(xTaskServer);
   }
   else
   {

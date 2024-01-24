@@ -5,8 +5,13 @@
 #include "my_mqtt.h"
 #include "cJSON.h"
 #include "my_servo.h"
+#include "my_softap.h"
+
+#include "my_scan.c"
+#include "my_server.h"
 
 TaskHandle_t xTask = NULL;
+TaskHandle_t xTaskServer = NULL;
 QueueHandle_t xQueueMQTT = NULL;
 
 void task_function(void *arg)
@@ -21,11 +26,21 @@ void task_function(void *arg)
     rotate_servo(atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring));
   }
 }
+void task_server(void *arg)
+{
+  while (1)
+  {
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    softap_init();
+    server_init();
+  }
+}
 
 void app_main(void)
 {
   xQueueMQTT = xQueueCreate(3, 40 * sizeof(char));
   xTaskCreate(task_function, "Task", 2048, NULL, 0, &xTask);
-  wifi_init_sta();
+  xTaskCreate(task_server, "TaskServer", 3072, NULL, 0, &xTaskServer);
+  wifi_init_sta(xTaskServer);
   mqtt_app_start(xQueueMQTT);
 }

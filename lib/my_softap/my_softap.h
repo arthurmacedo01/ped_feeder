@@ -1,0 +1,1 @@
+void softap_init(void);
