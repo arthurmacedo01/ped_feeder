@@ -17,7 +17,6 @@ void task_function(void *arg)
     xQueueReceive(xQueueMQTT, &data, portMAX_DELAY);
     printf("task function sendo executado!\n");
     cJSON *data_JSON = cJSON_Parse(data);
-    printf("dentro da task: valor de on_off é %d\n", cJSON_GetObjectItem(data_JSON, "on_off")->valueint);
     printf("dentro da task: o valor de itensity é %d\n", atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring));
     rotate_servo(atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring));
   }
