@@ -29,6 +29,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 static const char *TAG = "mqtt_example";
+static esp_mqtt_client_handle_t client = NULL;
 
 static void log_error_if_nonzero(const char *message, int error_code)
 {
@@ -60,7 +61,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   case MQTT_EVENT_CONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
     // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-    msg_id = esp_mqtt_client_subscribe(client, "/exemploMQTTTASK", 0);
+    msg_id = esp_mqtt_client_subscribe(client, "/exemploMQTTTASK/in", 0);
     break;
   case MQTT_EVENT_DISCONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -97,13 +98,18 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   }
 }
 
+void send_mqtt(char *data)
+{
+  esp_mqtt_client_publish(client, "/exemploMQTTTASK/out", data, 0, 1, 0);
+}
+
 void mqtt_app_start(QueueHandle_t xQueueMQTT)
 {
   esp_mqtt_client_config_t mqtt_cfg = {
       .uri = CONFIG_BROKER_URL,
   };
 
-  esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+  client = esp_mqtt_client_init(&mqtt_cfg);
   /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
   esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, xQueueMQTT);
   esp_mqtt_client_start(client);

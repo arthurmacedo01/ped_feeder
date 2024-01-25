@@ -32,7 +32,7 @@
 
       function onConnect() {
         console.log("onConnect");
-        client.subscribe("/exemploMQTTTASK");
+        client.subscribe("/exemploMQTTTASK/out");
         var sendButtonElement = document.getElementById("sendButton");
         sendButtonElement.classList.remove("btn-danger");
         sendButtonElement.classList.add("btn-success");
@@ -55,11 +55,14 @@
 
       function sendMsg(event) {
         event.preventDefault();
+        var msgTopElement = document.getElementById("msgTop");
+        msgTopElement.textContent = "";
         data = {
+          cmd: "in",
           intensity: event.target.intensity.value,
         };
         message = new Paho.MQTT.Message(JSON.stringify(data));
-        message.destinationName = "/exemploMQTTTASK";
+        message.destinationName = "/exemploMQTTTASK/in";
         client.send(message);
       }
     </script>
@@ -67,11 +70,7 @@
   </head>
   <body class="container">
     <h1 class="text-center">Alimentador</h1>
-    <img
-      src="./img.jpg"
-      class="center-block"
-      style="max-width: 100px"
-    />
+    <img src="./img.jpg" class="center-block" style="max-width: 100px" />
     <p class="text-center">Alimente o dog</p>
 
     <form onsubmit="sendMsg(event)">
