@@ -56,9 +56,8 @@
       function sendMsg(event) {
         event.preventDefault();
         var msgTopElement = document.getElementById("msgTop");
-        msgTopElement.textContent = "";
+        msgTopElement.textContent = "...";
         data = {
-          cmd: "in",
           intensity: event.target.intensity.value,
         };
         message = new Paho.MQTT.Message(JSON.stringify(data));

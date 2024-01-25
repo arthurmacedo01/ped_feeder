@@ -25,7 +25,6 @@ void task_function(void *arg)
 
     int intensity = 0;
     intensity = atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring);
-    printf("dentro da task: o valor de itensity é %d\n", intensity);
     rotate_servo(intensity);
     char *msg = "OK";
     xQueueSendToBack(xQueueMQTTOut, (void *)&(msg), portMAX_DELAY);
@@ -38,7 +37,6 @@ void task_mqtt(void *arg)
   while (1)
   {
     xQueueReceive(xQueueMQTTOut, &data, portMAX_DELAY);
-    printf("dentro da task mqtt: %s\n", data);
     send_mqtt(data);
   }
 }
