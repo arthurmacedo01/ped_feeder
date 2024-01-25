@@ -90,7 +90,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
   }
 }
 
-void wifi_init_sta(TaskHandle_t xTaskServer)
+void wifi_init_sta(TaskHandle_t xTaskServer, TaskHandle_t xTaskMQTT)
 {
   s_wifi_event_group = xEventGroupCreate();
 
@@ -168,16 +168,16 @@ void wifi_init_sta(TaskHandle_t xTaskServer)
   if (bits & WIFI_CONNECTED_BIT)
   {
     ESP_LOGI(TAG, "connected to ap");
+    xTaskNotifyGive(xTaskMQTT);
   }
   else if (bits & WIFI_FAIL_BIT)
   {
     ESP_LOGI(TAG, "Failed to connect to ap");
-    esp_wifi_stop();
-    esp_wifi_deinit();
+    ESP_ERROR_CHECK(esp_wifi_stop());
+    ESP_ERROR_CHECK(esp_wifi_deinit());
     esp_netif_destroy_default_wifi(sta_netif);
-    esp_event_loop_delete_default();
-    esp_netif_deinit();
-    nvs_flash_deinit();
+    ESP_ERROR_CHECK(esp_event_loop_delete_default());
+    ESP_ERROR_CHECK(nvs_flash_deinit());
     xTaskNotifyGive(xTaskServer);
   }
   else

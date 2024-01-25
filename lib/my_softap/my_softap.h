@@ -1,1 +1,1 @@
-void softap_init(void);
+void wifi_init_softap(void);

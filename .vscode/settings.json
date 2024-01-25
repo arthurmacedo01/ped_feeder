@@ -30,6 +30,7 @@
     "stdio.h": "c",
     "string": "c",
     "string_view": "c",
-    "typeinfo": "c"
+    "typeinfo": "c",
+    "esp_sntp.h": "c"
   }
 }
