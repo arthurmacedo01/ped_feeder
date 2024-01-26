@@ -84,6 +84,7 @@
       }
       function sendConfig(event) {
         event.preventDefault();
+        document.getElementById("configForm").hidden = true;
         var msgTopElement = document.getElementById("msgTop");
         msgTopElement.textContent = "aguardando confirmação ...";
         const timers = [];
@@ -97,6 +98,9 @@
           timers.push(event.target.timer4Config.value);
         event.target.timer5Config.value > 0 &&
           timers.push(event.target.timer5Config.value);
+        timers.sort(function (a, b) {
+          return parseInt(a) - parseInt(b);
+        });
 
         data = {
           cmd: "CONFIG",
@@ -137,7 +141,18 @@
       />
     </form>
     <p id="msgTop" class="text-center my-3">Aguardando Conexão</p>
-    <form onsubmit="sendConfig(event)" class="card card-body my-3">
+    <button
+      class="btn btn-secondary"
+      onclick="document.getElementById('configForm').hidden = false"
+    >
+      Configurações
+    </button>
+    <form
+      onsubmit="sendConfig(event)"
+      class="card card-body my-3"
+      id="configForm"
+      hidden
+    >
       <h4 class="text-center">Configurar Horários e Intensidade Programados</h4>
       <div class="form-group">
         <label for="intensityConfig" class="form-label">Intensidade:</label>
