@@ -67,7 +67,7 @@ void dispatch(char *data, QueueHandle_t xQueueMQTTOut, QueueHandle_t xQueueFeed,
   }
   if (strcmp(cJSON_GetObjectItem(data_JSON, "cmd")->valuestring, "PING") == 0)
   {
-    int *timers, intensity, numTimers;
+    int *timers = NULL, intensity = 0, numTimers = 0;
     load_timers(&intensity, &timers, &numTimers);
     sprintf(msg, "Programação. Intensidade: %d. Horários: ", intensity);
     char temp_buffer[50];
@@ -76,8 +76,11 @@ void dispatch(char *data, QueueHandle_t xQueueMQTTOut, QueueHandle_t xQueueFeed,
       sprintf(temp_buffer, " %dh%dmin%ds", timers[i] / 3600, (timers[i] % 3600) / 60, timers[i] % 60);
       strcat(msg, temp_buffer); // Copy the formatted string back to msg
     }
-    printf("%s", msg);
-    free(timers);
+    if (timers != NULL)
+    {
+      free(timers);
+      timers = NULL;
+    }
     xQueueSendToBack(xQueueMQTTOut, (void *)&(msg), portMAX_DELAY);
   }
   // Free cJSON object after use

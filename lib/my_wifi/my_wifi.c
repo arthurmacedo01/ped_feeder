@@ -130,7 +130,7 @@ void wifi_init_sta(TaskHandle_t xTaskServer, TaskHandle_t xTaskMQTT)
   };
 
   nvs_handle nvs_handle;
-  ESP_ERROR_CHECK(nvs_open("store", NVS_READONLY, &nvs_handle));
+  ESP_ERROR_CHECK(nvs_open("store", NVS_READWRITE, &nvs_handle));
   size_t required_size;
   if (nvs_get_str(nvs_handle, "ssid", NULL, &required_size) == ESP_OK)
   {

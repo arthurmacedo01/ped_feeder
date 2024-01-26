@@ -166,7 +166,7 @@ CONFIG_ESP_MAX_STA_CONN=4
 # MQTT Configuration
 #
 CONFIG_BROKER_URL="mqtt://test.mosquitto.org:1883"
-CONFIG_MQTT_TOPIC="alimentador123"
+CONFIG_MQTT_TOPIC="arteli2023"
 # end of MQTT Configuration
 
 #

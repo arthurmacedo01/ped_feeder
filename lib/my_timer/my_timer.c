@@ -13,15 +13,21 @@ int load_timers(int *intensity, int **timers, int *numTimers)
   nvs_handle nvs_handle;
 
   // Open NVS namespace
-  ESP_ERROR_CHECK(nvs_open("store", NVS_READONLY, &nvs_handle));
+  ESP_ERROR_CHECK(nvs_open("store", NVS_READWRITE, &nvs_handle));
+
+  // Get the intensity value
+  int intensity_value = 0;
+  err_intensity = nvs_get_i32(nvs_handle, "intensity", &intensity_value);
 
   size_t timers_size;
   // Get the size of the programedTimes blob
   err_programedTimes = nvs_get_blob(nvs_handle, "programedTimes", NULL, &timers_size);
-  if (err_programedTimes != ESP_OK)
+
+  if (err_programedTimes != ESP_OK || err_intensity != ESP_OK)
   {
     return 0;
   }
+  
   // Allocate memory for programedTimes
   *timers = malloc(timers_size);
 
@@ -31,17 +37,8 @@ int load_timers(int *intensity, int **timers, int *numTimers)
   // Get the programedTimes blob data
   nvs_get_blob(nvs_handle, "programedTimes", *timers, &timers_size);
 
-  // Get the intensity value
-  int intensity_value = 0;
-  err_intensity = nvs_get_i32(nvs_handle, "intensity", &intensity_value);
-  if (err_intensity != ESP_OK)
-  {
-    return 0;
-  }
-  else
-  {
-    *intensity = intensity_value;
-  }
+  // set intensity pointer value
+  *intensity = intensity_value;
 
   // Close NVS
   nvs_close(nvs_handle);
@@ -57,7 +54,11 @@ void check_time(QueueHandle_t xQueueFeed)
   int numTimers = 0;
   if (load_timers(&intensity, &programedTimes, &numTimers) == 0)
   {
-    free(programedTimes);
+    if (programedTimes != NULL)
+    {
+      free(programedTimes);
+      programedTimes = NULL;
+    }
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
   }
 
@@ -99,7 +100,11 @@ void check_time(QueueHandle_t xQueueFeed)
     ESP_LOGI(TAG, "Proximo timer é %d, agora é %d, aguardando %d s\n", nextTime, nowSeconds, waitTime);
     if (ulTaskNotifyTake(pdTRUE, waitTime * 1000 / portTICK_PERIOD_MS))
     {
-      free(programedTimes);
+      if (programedTimes != NULL)
+      {
+        free(programedTimes);
+        programedTimes = NULL;
+      }
       load_timers(&intensity, &programedTimes, &numTimers);
     }
     else
