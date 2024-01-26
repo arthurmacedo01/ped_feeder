@@ -35,6 +35,7 @@ void task_mqtt(void *arg)
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
   mqtt_app_start(xQueueMQTTIn);
   ntp_init();
+
   while (1)
   {
     char *data = NULL;

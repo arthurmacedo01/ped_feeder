@@ -35,6 +35,7 @@
     "ctime": "c",
     "esp_log.h": "c",
     "my_timer.h": "c",
-    "my_dispatcher.h": "c"
+    "my_dispatcher.h": "c",
+    "my_led.h": "c"
   }
 }

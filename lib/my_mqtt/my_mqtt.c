@@ -28,6 +28,9 @@
 
 #include "esp_log.h"
 #include "mqtt_client.h"
+
+#include "my_led.h"
+
 static const char *TAG = "mqtt_example";
 static esp_mqtt_client_handle_t client = NULL;
 
@@ -65,11 +68,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   case MQTT_EVENT_CONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
     msg_id = esp_mqtt_client_subscribe(client, topic_in, 0);
+    onOffLed(1);
     break;
   case MQTT_EVENT_DISCONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
+    onOffLed(0);
     break;
-
   case MQTT_EVENT_SUBSCRIBED:
     ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
     break;
