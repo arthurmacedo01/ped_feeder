@@ -108,4 +108,10 @@ menu "MQTT Configuration"
         help
             URL of the broker to connect to
 
+    config MQTT_TOPIC
+        string "MQTT TOPIC"
+        default "exemploMQTT123456"
+        help
+            Topic for MQTT communication
+
 endmenu

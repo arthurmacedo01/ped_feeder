@@ -49,7 +49,7 @@ static esp_err_t hello_get_handler(httpd_req_t *req)
 }
 
 static const httpd_uri_t hello = {
-    .uri = "/hello",
+    .uri = "/",
     .method = HTTP_GET,
     .handler = hello_get_handler,
     /* Let's pass response string in user

@@ -3,13 +3,15 @@
 #include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_log.h"
 
 #define GPIO_NUM GPIO_NUM_5
 #define PWM_180deg 126
 #define PWM_0deg 28
 #define MAX_ROTATE_MS 800
+#define TAG "SERVO"
 
-void ledc_init(void)
+static void ledc_init(void)
 {
   ledc_timer_config_t ledc_timer = {
       .speed_mode = LEDC_LOW_SPEED_MODE,
@@ -31,12 +33,12 @@ void ledc_init(void)
   ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
 
-uint32_t calc_duty(int angle_deg)
+static uint32_t calc_duty(int angle_deg)
 {
   return (PWM_180deg - PWM_0deg) * angle_deg / 180 + PWM_0deg;
 }
 
-void one_rotation(int duration)
+static void one_rotation(int duration)
 {
   ESP_ERROR_CHECK(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, calc_duty(180)));
   ESP_ERROR_CHECK(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0));
@@ -48,6 +50,7 @@ void one_rotation(int duration)
 
 void rotate_servo(int intensity)
 {
+  ESP_LOGI(TAG, "Rotating Servo");
   ledc_init();
   int n_rotation = intensity / 100;
   int remainder = (intensity % 100) * MAX_ROTATE_MS / 100;

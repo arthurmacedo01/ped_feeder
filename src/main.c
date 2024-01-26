@@ -3,58 +3,51 @@
 #include "freertos/queue.h"
 #include "my_wifi.h"
 #include "my_mqtt.h"
-#include "cJSON.h"
 #include "my_servo.h"
 #include "my_softap.h"
-
-#include "my_scan.c"
+#include "nvs_flash.h"
 #include "my_server.h"
 #include "mdns.h"
 #include "my_ntp.h"
 #include "my_mdns.h"
+#include "my_timer.h"
+#include "my_dispatcher.h"
 
 TaskHandle_t xTask = NULL;
+TaskHandle_t xTaskCheckTime = NULL;
 TaskHandle_t xTaskMQTT = NULL;
 TaskHandle_t xTaskServer = NULL;
 QueueHandle_t xQueueMQTTIn = NULL;
 QueueHandle_t xQueueMQTTOut = NULL;
+QueueHandle_t xQueueFeed = NULL;
 
-void task_function(void *arg)
+void task_receive_mqtt(void *arg)
 {
   char *data = NULL;
   while (1)
   {
     xQueueReceive(xQueueMQTTIn, &data, portMAX_DELAY);
-    cJSON *data_JSON = cJSON_Parse(data);
-    time_t now = 0;
-    time(&now);
-    localtime(&now);
-    print_time(now, "Time inside task");
-    int intensity = 0;
-    intensity = atoi(cJSON_GetObjectItem(data_JSON, "intensity")->valuestring);
-    rotate_servo(intensity);
-    char *msg = "OK";
-    xQueueSendToBack(xQueueMQTTOut, (void *)&(msg), portMAX_DELAY);
+    dispatch(data, xQueueMQTTOut, xQueueFeed, xTaskCheckTime);
   }
 }
 void task_mqtt(void *arg)
 {
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
   mqtt_app_start(xQueueMQTTIn);
-  char *data = NULL;
+  ntp_init();
   while (1)
   {
+    char *data = NULL;
     xQueueReceive(xQueueMQTTOut, &data, portMAX_DELAY);
     send_mqtt(data);
+    free(data);
   }
 }
-
 void task_client(void *arg)
 {
   wifi_init_sta(xTaskServer, xTaskMQTT);
   vTaskDelete(NULL);
 }
-
 void task_server(void *arg)
 {
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
@@ -67,15 +60,28 @@ void task_server(void *arg)
   ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
   vTaskDelete(NULL);
 }
-
+void task_check_time(void *arg)
+{
+  check_time(xQueueFeed);
+}
+void task_feed(void *arg)
+{
+  int intensity = 0;
+  while (1)
+  {
+    xQueueReceive(xQueueFeed, &intensity, portMAX_DELAY);
+    rotate_servo(intensity);
+  }
+}
 void app_main(void)
 {
   xQueueMQTTIn = xQueueCreate(3, 40 * sizeof(char));
   xQueueMQTTOut = xQueueCreate(3, 40 * sizeof(char));
-  xTaskCreate(task_function, "Task", 2048, NULL, 0, &xTask);
+  xQueueFeed = xQueueCreate(3, 40 * sizeof(int));
+  xTaskCreate(task_receive_mqtt, "TaskReceiveMQTT", 2048, NULL, 0, &xTask);
+  xTaskCreate(task_check_time, "CheckTime", 2048, NULL, 0, &xTaskCheckTime);
   xTaskCreate(task_client, "TaskClient", 3072, NULL, 0, NULL);
   xTaskCreate(task_mqtt, "TaskMQTT", 3072, NULL, 0, &xTaskMQTT);
   xTaskCreate(task_server, "TaskServer", 3072, NULL, 0, &xTaskServer);
-
-  // ntp_init();
+  xTaskCreate(task_feed, "TaskFeed", 1024, NULL, 0, NULL);
 }

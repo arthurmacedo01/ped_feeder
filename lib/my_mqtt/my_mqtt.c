@@ -56,12 +56,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
   esp_mqtt_client_handle_t client = event->client;
   int msg_id;
   QueueHandle_t xQueueMQTT = handler_args;
+  char topic_in[50];
+
+  sprintf(topic_in, "/%s/in", CONFIG_MQTT_TOPIC);
+
   switch ((esp_mqtt_event_id_t)event_id)
   {
   case MQTT_EVENT_CONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-    // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-    msg_id = esp_mqtt_client_subscribe(client, "/exemploMQTTTASK/in", 0);
+    msg_id = esp_mqtt_client_subscribe(client, topic_in, 0);
     break;
   case MQTT_EVENT_DISCONNECTED:
     ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -100,7 +103,9 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
 void send_mqtt(char *data)
 {
-  esp_mqtt_client_publish(client, "/exemploMQTTTASK/out", data, 0, 1, 0);
+  char topic_out[50];
+  sprintf(topic_out, "/%s/out", CONFIG_MQTT_TOPIC);
+  esp_mqtt_client_publish(client, topic_out, data, 0, 1, 0);
 }
 
 void mqtt_app_start(QueueHandle_t xQueueMQTT)
