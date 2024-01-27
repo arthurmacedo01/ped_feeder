@@ -42,18 +42,11 @@
         message = new Paho.MQTT.Message(JSON.stringify(data));
         message.destinationName = "/" + topic + "/in";
         client.send(message);
-        var sendButtonElement = document.getElementById("sendButton");
-        sendButtonElement.classList.remove("btn-danger");
-        sendButtonElement.classList.add("btn-success");
-        sendButtonElement.disabled = false;
-        sendButtonElement = document.getElementById("sendButtonConfig");
-        sendButtonElement.classList.remove("btn-danger");
-        sendButtonElement.classList.add("btn-success");
-        sendButtonElement.disabled = false;
       }
       function onConnectionLost(responseObject) {
         if (responseObject.errorCode !== 0)
           console.log("onConnectionLost:" + responseObject.errorMessage);
+        msgTopElement.textContent = "Aguardando Reconexão";
         var sendButtonElement = document.getElementById("sendButton");
         sendButtonElement.classList.remove("btn-success");
         sendButtonElement.classList.add("btn-danger");
@@ -68,6 +61,14 @@
         console.log("onMessageArrived:" + message.payloadString);
         var msgTopElement = document.getElementById("msgTop");
         msgTopElement.textContent = message.payloadString;
+        var sendButtonElement = document.getElementById("sendButton");
+        sendButtonElement.classList.remove("btn-danger");
+        sendButtonElement.classList.add("btn-success");
+        sendButtonElement.disabled = false;
+        sendButtonElement = document.getElementById("sendButtonConfig");
+        sendButtonElement.classList.remove("btn-danger");
+        sendButtonElement.classList.add("btn-success");
+        sendButtonElement.disabled = false;
       }
 
       function sendMsg(event) {
@@ -134,8 +135,8 @@
 
       <input
         type="submit"
-        class="btn"
-        value="Enviar"
+        class="btn btn-danger"
+        value="Alimentar Agora!"
         id="sendButton"
         disabled
       />
@@ -143,7 +144,7 @@
     <p id="msgTop" class="text-center my-3">Aguardando Conexão</p>
     <button
       class="btn btn-secondary"
-      onclick="document.getElementById('configForm').hidden = false"
+      onclick="document.getElementById('configForm').hidden = !document.getElementById('configForm').hidden"
     >
       Configurações
     </button>
@@ -322,8 +323,8 @@
       </select>
       <input
         type="submit"
-        class="btn"
-        value="Enviar"
+        class="btn btn-danger"
+        value="Salvar Programação"
         id="sendButtonConfig"
         disabled
       />
