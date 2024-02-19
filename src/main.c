@@ -58,7 +58,8 @@ void task_server(void *arg)
   initialise_mdns();
   wifi_init_softap();
   server_init();
-  ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+  vTaskDelay(10 * 60 * 1000 / portTICK_PERIOD_MS);
+  esp_restart();
   vTaskDelete(NULL);
 }
 void task_check_time(void *arg)
