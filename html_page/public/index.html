@@ -124,6 +124,7 @@
     <form onsubmit="sendMsg(event)" class="card card-body">
       <div class="form-group">
         <label for="intensity" class="form-label">Intensidade:</label>
+        <div id="intensity_now" class="d-inline-block"></div>
         <input
           type="range"
           id="intensity"
@@ -131,6 +132,7 @@
           min="0"
           max="300"
           value="100"
+          onchange="document.getElementById('intensity_now').innerHTML = this.value;"
         />
       </div>
 
@@ -158,6 +160,7 @@
       <h4 class="text-center">Configurar Horários e Intensidade Programados</h4>
       <div class="form-group">
         <label for="intensityConfig" class="form-label">Intensidade:</label>
+        <div id="intensity_config_display" class="d-inline-block"></div>
         <input
           type="range"
           id="intensityConfig"
@@ -165,6 +168,7 @@
           min="0"
           max="300"
           value="100"
+          onchange="document.getElementById('intensity_config_display').innerHTML = this.value;"
         />
       </div>
       <select
